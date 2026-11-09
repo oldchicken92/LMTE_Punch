@@ -1,0 +1,14 @@
+# Punch (Assignment 2b)
+
+A bash-lite command language, implemented as a tree-walking interpreter in C++17 (Unix).
+
+## Build and run
+    make                      # or: g++ -std=c++17 -Wall src/*.cpp -o punch
+    ./punch script.punch      # run a script
+    ./punch --tokens f.punch  # print the token stream (lexer output)
+    ./punch --ast f.punch     # print the syntax tree (from step 42)
+    make test                 # run tests/run_tests.sh
+
+## Pipeline
+    source -> Lexer -> tokens -> Parser -> AST -> Analyser -> Interpreter
+
