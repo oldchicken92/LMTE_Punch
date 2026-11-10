@@ -1,6 +1,6 @@
 # Punch (Assignment 2b)
 
-A bash-lite command language, implemented as a tree-walking interpreter in C++17 (Unix).
+A command language implemented as a tree-walking interpreter in C++17.
 
 ## Build and run
     make                      # or: g++ -std=c++17 -Wall src/*.cpp -o punch
@@ -11,4 +11,3 @@ A bash-lite command language, implemented as a tree-walking interpreter in C++17
 
 ## Pipeline
     source -> Lexer -> tokens -> Parser -> AST -> Analyser -> Interpreter
-

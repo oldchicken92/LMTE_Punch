@@ -1,0 +1,5 @@
+-num-number = 0
+loop(5)
+add(-num-, 5)
+change(-num-, add(-num-, 5))
+endloop

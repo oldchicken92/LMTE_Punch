@@ -1,0 +1,13 @@
+// program that increments each element in an array
+-nums-list_number = [3,2,4,7]
+-index-number = 0
+
+out("original list: ", -nums-)
+
+while(lt(-index-,4))
+    change(-nums-[-index-], add(-nums-[-index-],1))
+
+    change(-index-, add(-index-, 1))
+endwhile
+
+out("updated list: ", -nums-)
