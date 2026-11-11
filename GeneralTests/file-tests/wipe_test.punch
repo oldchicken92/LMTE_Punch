@@ -1,0 +1,4 @@
+// make sure thisfolderisatest is NOT empty before running this to see the code in action
+// can possibly run "touch file1 file2 file3" in thisfolderisatest/ folder to create 3 files
+
+wipe(thisfolderisatest/) // deletes all elements in the folder specified. 

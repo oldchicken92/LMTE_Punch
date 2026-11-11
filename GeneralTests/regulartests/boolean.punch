@@ -1,0 +1,36 @@
+//This test output will be 
+//true
+//false
+//true
+//false
+//true
+//false
+//true
+//false
+//true
+//false
+//false
+//true
+//PASS
+-flag-boolean = true
+out(-flag-)             
+change(-flag-,false)     
+out(-flag-)             
+
+lt(3,6)              
+gt(3,6)                
+eq(5,5)                
+neq(5,5)           
+
+and(true,true)        
+and(true,false)          
+or(false,true)         
+or(false,false)            
+not(true)                  
+not(false)
+
+if(and(gt(7,5),lt(7,10)))
+   out("PASS")
+else
+   out("FAIL")
+endif

@@ -1,0 +1,4 @@
+-name-string = "log.txt" // creates a .txt file named log
+
+out_file(-name-, "testing punch out_file functionality, byte size should be the number of characters in this speech + 1 for the file itself")
+out("size of ", -name- , "is: ", size(-name-), " bytes")

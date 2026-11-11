@@ -1,0 +1,2 @@
+-x-number = "hello" // string value cannot be initialised to a number variable
+

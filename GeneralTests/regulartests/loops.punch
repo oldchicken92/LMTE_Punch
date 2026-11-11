@@ -1,0 +1,9 @@
+-count-number = 0
+
+loop(6)
+   loop(7)
+      change(-count-,add(-count-,1))
+    endloop
+endloop
+
+out("Count:",-count-)  //This will output 42

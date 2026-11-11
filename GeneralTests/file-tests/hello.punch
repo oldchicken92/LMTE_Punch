@@ -1,0 +1,2 @@
+// prints hello punch to terminal
+out("Hello Punch!")

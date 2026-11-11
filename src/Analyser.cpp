@@ -1,31 +1,16 @@
+// Analyser.cpp file is the implementation for main analyser to perform semantic checks
+
 #include "Analyser.h"
 
-// ============================================================================
-// analyser.cpp  -  semantic checks before execution
-//
-// This stage verifies that the AST is not only syntactically valid but also
-// makes sense in the language's type system. It tracks variable declarations,
-// checks assignment compatibility, validates function calls, and ensures
-// conditions and list indexes are used correctly.
-//
-// Design note:
-//   - variables live in a single shared symbol table for the whole program
-//   - every expression gets a static type before the code runs
-//   - built-in calls are checked for arity and kind compatibility here
-//   - runtime-only failures (missing files, divide-by-zero) are left for the
-//     interpreter so the analyser stays focused on meaning and safety.
-// ============================================================================
-
 namespace {
-constexpr size_t MANY = static_cast<size_t>(-1);     // "no upper limit" for argument counts
+constexpr size_t MANY = static_cast<size_t>(-1);     // no upper limit for argument counts
 
 Type simple(Kind k) { return Type{k, Kind::Any}; }
 
-// Does type `t` satisfy `wanted`?  Kind::Any (e.g. an element of a plain
-// `list`) is accepted everywhere; the interpreter double-checks at runtime.
+// kind::Ant is accepted as a loose type for list values
 bool is(const Type& t, Kind wanted) { return t.kind == wanted || t.kind == Kind::Any; }
 
-// File commands accept a file, a folder, or a string (strings convert to paths).
+// Path values may be file, folder or string name
 bool isPathLike(const Type& t) {
     return is(t, Kind::File) || is(t, Kind::Folder) || is(t, Kind::String);
 }
@@ -34,24 +19,19 @@ bool oneOf(const std::string& n, std::initializer_list<const char*> names) {
     for (const char* s : names) if (n == s) return true;
     return false;
 }
-}  // namespace
+}  // end namespace
 
 void Analyser::fail(int line, const std::string& message) const {
     throw PunchError("semantic", line, message);
 }
 
-// ============================================================================
-// ENTRY POINT
-// ============================================================================
+// Entry point
 void Analyser::analyse(const Program& program) {
     symbols.clear();
     checkBlock(program.statements);
 }
 
-// ============================================================================
-// STATEMENTS
-// Blocks do not create a new scope: all variables share one global scope.
-// ============================================================================
+// Statements
 void Analyser::checkBlock(const Block& block) {
     for (const StmtPtr& s : block) checkStatement(*s);
 }
@@ -79,7 +59,7 @@ void Analyser::checkStatement(const Stmt& s) {
         return;
     }
     if (auto* e = dynamic_cast<const ExprStmt*>(&s)) {
-        typeOf(*e->expr);       // checks the call is valid; result type is ignored
+        typeOf(*e->expr); 
         return;
     }
 }
@@ -89,8 +69,7 @@ void Analyser::checkDeclaration(const Declaration& d) {
     if (symbols.count(d.name))
         fail(d.line, "'-" + d.name + "-' is already declared (use change() to update it)");
 
-    // Work out the value's type BEFORE adding the name, so
-    // `-x-number = add(-x-, 1)` is correctly reported as use-before-declare.
+    // Work out the value's type before adding name
     Type actual = typeOf(*d.value);
     if (actual.kind == Kind::Void) fail(d.line, "the value has no result to store");
     if (!assignable(d.type, *d.value, actual))
@@ -99,7 +78,7 @@ void Analyser::checkDeclaration(const Declaration& d) {
     symbols[d.name] = d.type;
 }
 
-// change(-name-, value)   or   change(-name-[i], value)
+// Checks change function
 void Analyser::checkChange(const Change& c) {
     const VarRef& t = *c.target;
     auto it = symbols.find(t.name);
@@ -108,12 +87,10 @@ void Analyser::checkChange(const Change& c) {
 
     Type target = it->second;
     if (t.index) {
-        // change(-list-[i], v): the target is ONE ELEMENT of the list
         if (target.kind != Kind::List) fail(c.line, "'-" + t.name + "-' is not a list, so it cannot be indexed");
         if (!is(typeOf(*t.index), Kind::Number)) fail(c.line, "a list index must be a number");
         target = simple(target.elem);
     } else if (target.kind == Kind::File) {
-        // The language rule: files are renamed or deleted, never reassigned.
         fail(c.line, "file variable '-" + t.name + "-' cannot be changed (use rename() or delete())");
     }
 
@@ -124,9 +101,7 @@ void Analyser::checkChange(const Change& c) {
                      "-' holds " + typeName(target) + ")");
 }
 
-// The wording for a type mismatch. For a list literal going into list_X it
-// names the first item of the wrong type, which is far more useful than
-// just saying "list".
+// explains mismatch for typed list values
 std::string Analyser::mismatch(const Type& declared, const Expr& value, const Type& actual) {
     if (declared.kind == Kind::List && actual.kind == Kind::List && declared.elem != Kind::Any) {
         if (auto* lit = dynamic_cast<const ListLit*>(&value)) {
@@ -141,22 +116,20 @@ std::string Analyser::mismatch(const Type& declared, const Expr& value, const Ty
     return "cannot store " + typeName(actual);
 }
 
-// Is `value` (of type `actual`) allowed where `declared` is expected?
+// Checks whether a value of type actual is valid for the declared type
 bool Analyser::assignable(const Type& declared, const Expr& value, const Type& actual) {
-    if (actual.kind == Kind::Any) return true;            // unknown until runtime
+    if (actual.kind == Kind::Any) return true;  
     if (declared.kind != actual.kind) return false;
     if (declared.kind != Kind::List) return true;
-    if (declared.elem == Kind::Any) return true;          // plain `list` takes any list
+    if (declared.elem == Kind::Any) return true; 
 
-    // list_X: a list LITERAL is checked element by element ...
     if (auto* lit = dynamic_cast<const ListLit*>(&value)) {
         for (const ExprPtr& item : lit->items) {
             Type et = typeOf(*item);
             if (et.kind != declared.elem && et.kind != Kind::Any) return false;
-        }
+         }
         return true;
     }
-    // ... anything else (a variable, in_file(...)) must carry the same element type.
     return actual.elem == declared.elem;
 }
 
@@ -166,9 +139,8 @@ void Analyser::requireCondition(const Expr& e, const std::string& what) {
         fail(e.line, what + " condition must be true/false (e.g. lt(), eq(), and()) but is " + typeName(t));
 }
 
-// ============================================================================
-// EXPRESSIONS: compute each expression's type
-// ============================================================================
+// Expressions
+// Compute expressions type and inavlude uses
 Type Analyser::typeOf(const Expr& e) {
     if (dynamic_cast<const NumberLit*>(&e)) return simple(Kind::Number);
     if (dynamic_cast<const StringLit*>(&e)) return simple(Kind::String);
@@ -181,20 +153,18 @@ Type Analyser::typeOf(const Expr& e) {
     fail(e.line, "unknown expression");
 }
 
-// -x-  or  -x-[i]
 Type Analyser::typeOfVarRef(const VarRef& v) {
     auto it = symbols.find(v.name);
     if (it == symbols.end()) fail(v.line, "'-" + v.name + "-' is used before it is declared");
-
     if (!v.index) return it->second;
-
     if (it->second.kind != Kind::List) fail(v.line, "'-" + v.name + "-' is not a list, so it cannot be indexed");
     if (!is(typeOf(*v.index), Kind::Number)) fail(v.line, "a list index must be a number");
-    return simple(it->second.elem);            // an element has the list's element type
+
+    return simple(it->second.elem);  
 }
 
-// [a, b, c]: if every item has the same kind the list is list_<kind>,
-// otherwise it is a mixed list (element kind Any).
+// for lists, if every item has the same kind the list is list_<kind>
+// otherwise it is a mixed list
 Type Analyser::typeOfList(const ListLit& l) {
     Kind common = Kind::Any;
     bool first = true, mixed = false;
@@ -205,32 +175,28 @@ Type Analyser::typeOfList(const ListLit& l) {
         if (first) { common = t.kind; first = false; }
         else if (t.kind != common) mixed = true;
     }
-    if (mixed || first) common = Kind::Any;    // mixed or empty
+    if (mixed || first) common = Kind::Any;
     return Type{Kind::List, common};
 }
 
-// ============================================================================
-// FUNCTION CALLS: the signature table
-// ============================================================================
+// function calls -> validates built-in names, arguments. counts and types
 void Analyser::needArgs(const Call& c, size_t min, size_t max) {
     size_t n = c.args.size();
     if (n >= min && n <= max) return;
-    std::string expected = (min == max)   ? "exactly " + std::to_string(min)
-                         : (max == MANY)  ? "at least " + std::to_string(min)
-                                          : std::to_string(min) + " to " + std::to_string(max);
+    std::string expected = (min == max)   ? "exatly " + std::to_string(min) : (max == MANY)  ? "at least " + std::to_string(min) : std::to_string(min) + " to " + std::to_string(max);
     fail(c.line, c.name + "() takes " + expected + " argument(s) but got " + std::to_string(n));
 }
 
+// validation for kind
 void Analyser::requireKind(const Call& c, const std::vector<Type>& a, size_t i, Kind wanted) {
     if (!is(a[i], wanted))
-        fail(c.line, "argument " + std::to_string(i + 1) + " of " + c.name + "() must be a " +
-                     kindName(wanted) + " but is " + typeName(a[i]));
+        fail(c.line, "argument " + std::to_string(i + 1) + " of " + c.name + "() must be a " + kindName(wanted) + " but is " + typeName(a[i]));
 }
 
+// validation for path
 void Analyser::requirePathLike(const Call& c, const std::vector<Type>& a, size_t i) {
     if (!isPathLike(a[i]))
-        fail(c.line, "argument " + std::to_string(i + 1) + " of " + c.name +
-                     "() must be a file, folder or name but is " + typeName(a[i]));
+    fail(c.line, "argument " + std::to_string(i + 1) + " of " + c.name + "() must be a file, foldr or name but is " + typeName(a[i]));
 }
 
 Type Analyser::typeOfCall(const Call& c) {
@@ -244,27 +210,27 @@ Type Analyser::typeOfCall(const Call& c) {
     }
     const std::string& n = c.name;
 
-    // arithmetic: one or more numbers -> number
+    // arithmetic
     if (oneOf(n, {"add", "sub", "mult", "div"})) {
         needArgs(c, 1, MANY);
         for (size_t i = 0; i < a.size(); i++) requireKind(c, a, i, Kind::Number);
         return simple(Kind::Number);
     }
-    // ordering: two numbers -> boolean
+    // ordering
     if (oneOf(n, {"lt", "gt"})) {
         needArgs(c, 2, 2);
         requireKind(c, a, 0, Kind::Number);
         requireKind(c, a, 1, Kind::Number);
         return simple(Kind::Boolean);
     }
-    // equality: two values of the same kind -> boolean
+    // equality
     if (oneOf(n, {"eq", "neq"})) {
         needArgs(c, 2, 2);
         if (a[0].kind != a[1].kind && a[0].kind != Kind::Any && a[1].kind != Kind::Any)
-            fail(c.line, n + "() compares a " + typeName(a[0]) + " with a " + typeName(a[1]));
+            fail(c.line, n + "() compare a " + typeName(a[0]) + " with a " + typeName(a[1]));
         return simple(Kind::Boolean);
     }
-    // logic: booleans -> boolean
+    // logic/boolean
     if (oneOf(n, {"and", "or"})) {
         needArgs(c, 2, MANY);
         for (size_t i = 0; i < a.size(); i++) requireKind(c, a, i, Kind::Boolean);
@@ -276,7 +242,7 @@ Type Analyser::typeOfCall(const Call& c) {
         return simple(Kind::Boolean);
     }
 
-    // file commands
+    // file operations
     if (n == "rename") {
         needArgs(c, 2, 2);
         requirePathLike(c, a, 0);

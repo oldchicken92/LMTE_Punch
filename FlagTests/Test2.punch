@@ -1,0 +1,8 @@
+//Testing Change and Index
+-count-number = 10
+change(-count-,add(-count-,5))
+-values-list_number = [10,20,30]
+-idx-number = 1
+change(-values-[-idx-],add(-count-,10))
+out(-count-)
+out(-values-)

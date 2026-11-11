@@ -1,7 +1,0 @@
-out("HELLO WORLD")
--name-string = "Bob"
-out("My name is ", -name-)
-add(54,45, 545 , 545554 ,455445)
-change(-name-, "james")
-out("New name is " , -name- )
-div(120,119)

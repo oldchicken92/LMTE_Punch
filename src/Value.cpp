@@ -2,9 +2,7 @@
 #include <iomanip>
 #include <sstream>
 
-// ---------------------------------------------------------------------------
 // Names for error messages
-// ---------------------------------------------------------------------------
 std::string kindName(Kind k) {
     switch (k) {
         case Kind::Number:  return "number";
@@ -20,13 +18,11 @@ std::string kindName(Kind k) {
 }
 
 std::string typeName(const Type& t) {
-    if (t.kind == Kind::List && t.elem != Kind::Any) return "list_" + kindName(t.elem);
+    if (t.kind == Kind::List && t.elem != Kind::Any) {return "list_" + kindName(t.elem);}
     return kindName(t.kind);
 }
 
-// ---------------------------------------------------------------------------
 // Parsing a type word such as "number" or "list_string"
-// ---------------------------------------------------------------------------
 namespace {
 // The five "base" types (the ones a list can hold).
 bool baseKind(const std::string& w, Kind& k) {
@@ -50,17 +46,16 @@ bool parseTypeName(const std::string& text, Type& out) {
     return false;
 }
 
-// ---------------------------------------------------------------------------
 // Value -> text
-// ---------------------------------------------------------------------------
 std::string toText(const Value& v) {
     if (std::holds_alternative<std::monostate>(v.data)) return "";
 
+    // if 
     if (auto* d = std::get_if<double>(&v.data)) {
-        // 12 significant digits: 65 prints as "65", 0.1+0.2 as "0.3".
+        // 12 significant digits: 65 prints as "65", 0.1+0.2 as "0.3" rather than trailing unnecessary digits
         std::ostringstream os;
-        os << std::setprecision(12) << *d;
-        return os.str();
+        os << std::setprecision(12) << *d; // dereference pointer to retrieve actual double value
+        return os.str(); // return contents of the os buffer as normal string
     }
     if (auto* b = std::get_if<bool>(&v.data))        return *b ? "true" : "false";
     if (auto* s = std::get_if<std::string>(&v.data)) return *s;
@@ -76,9 +71,8 @@ std::string toText(const Value& v) {
     return out + "]";
 }
 
-// ---------------------------------------------------------------------------
+
 // Equality
-// ---------------------------------------------------------------------------
 bool valuesEqual(const Value& a, const Value& b) {
     if (a.data.index() != b.data.index()) return false;   // different kinds are never equal
 

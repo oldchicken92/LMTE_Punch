@@ -2,7 +2,7 @@
 -nums-list_number = [3,2,4,7]
 -index-number = 0
 
-out("original list: ", -nums-)
+out("original list: ", -nums-)     //original list: [3, 2, 4, 7]
 
 while(lt(-index-,4))
     change(-nums-[-index-], add(-nums-[-index-],1))
@@ -10,4 +10,4 @@ while(lt(-index-,4))
     change(-index-, add(-index-, 1))
 endwhile
 
-out("updated list: ", -nums-)
+out("updated list: ", -nums-)      //updated list: [4, 3, 5, 8]

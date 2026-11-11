@@ -1,0 +1,2 @@
+// Testing Basic Output Function
+out("Hello World!")

@@ -1,0 +1,15 @@
+TESTING INPUT/OUPUT FOR ALL FLAGS
+
+./punch --tokens FlagTests/Test1.punch
+2: FUNCTION(out)
+2: LPAREN(()
+2: STRING(Hello World!)
+2: RPAREN())
+2: NEWLINE(\n)
+3: EOF()
+
+./punch --ast FlagTests/Test1.punch
+Expression out("Hello World!")
+
+./punch --check FlagTests/Test1.punch
+ok: no errors found

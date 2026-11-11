@@ -1,0 +1,4 @@
+if(lt(1, 2))
+    out("no endif")
+
+// missing endif to end the if

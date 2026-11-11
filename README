@@ -3,11 +3,113 @@
 A command language implemented as a tree-walking interpreter in C++17.
 
 ## Build and run
-    make                      # or: g++ -std=c++17 -Wall src/*.cpp -o punch
-    ./punch script.punch      # run a script
+    make                      # or: g++ -std=c++17 -Wall src/*.cpp -o punch, this 
+    ./punch foldername/script.punch      # run a script (in a nested folder foldername, NO SLASH before foldername)
+    ./punch script.punch                 # run a script (in root folder)
     ./punch --tokens f.punch  # print the token stream (lexer output)
     ./punch --ast f.punch     # print the syntax tree (from step 42)
-    make test                 # run tests/run_tests.sh
+    ./punch --check f.punch # prints either error (with details) or no errors found
 
 ## Pipeline
     source -> Lexer -> tokens -> Parser -> AST -> Analyser -> Interpreter
+
+## Compilation Process
+g++ -std=c++17 -Wall src/*.cpp -o punch
+
+This line creates the final compiled binary program from all our C++ source files. It creates an executable 'punch' to which we pass script files into. This executable involves running our passed file, *.punch, through our 'pipeline' consisting of the _lexer, parser, analyser and interpreter_. Which then outputs whatever instruction was written in the .punch file (whether it may be a command line 'out' or an 'out_file' file created in the directory)
+
+- First the script text is loaded into memory. 
+- The lexer converts the text into tokens
+- The parser then builds the AST (abstract syntax tree) for syntax analysis
+- the analyser then type checks the code for any semantic errors
+- the interpreter goes through the AST and performs the actual outputs (file creations, math, loops, statements etc.)
+
+## Compilation
+Compiler supports:
+- Tokenization
+- Lexical Analysis
+- Syntax Analysis
+- Code Generation
+- Semantic Analysis
+
+## Design Outline - Syntactic and Semantic rules of the Compiler
+- General language and scope rules
+    All variables live in a global scope so declaring the same name twice is a semantic error. Control flow blocks such as if, loop, while, do not create local scopes.
+
+    Single line comments start with '//' and are not picked up by the lexer (as written in line 89-93 of Lexer.cpp)
+
+    Variables are created with hyphens surrounding the name, in this format: -name-<type> = <value>.
+    An example would be: -num-int = 2
+
+    Note that updating a variable must be done with change() statement, such as change(-num-, 20), rather than using equal sign (=) for re-assignment
+
+    However, file/folder variables cannot be changed with change(). They can be manipulated with rename(), delete(), wipe().
+
+
+- Type system rules
+    Punch supports 5 base types which include _number, string, boolean, file, folder, list / list_<type>_
+
+    Examples:
+        number: 20, 6.2, 0.3, -5.2
+        string: "", "hello"
+        boolean: true, false
+        file: notes.txt, log, test.docx
+        folder: docs/
+        list/list_<type>: [1,2,3] (list_number), [10,"hello"] (list), ["yes", "no", "maybe"] (list_string)
+
+    note: 
+        - folder names must end with / as it is a literal directory path
+        - nesting lists inside lists is forbidden
+        - using the generic 'list' base gives you the choice to have arrays with different types of elements in it
+
+
+- Statement Syntax and rules
+1. Declaration
+    -varName-type = expression 
+    (Flags an error if -varName- has already been declared, or if expression type does not match variable type)
+
+2. Change/Index Assignment
+    change(-varName-, expression) // changes varName to the value of expression
+    change(-list-[-idx-], expression) // changes the variable in list at index -idx- to the value of expression
+    (List index -idx- must evaluate to a number. Attempting to index non list types or modifying a file variable triggers a semantic error)
+
+
+3. Control Flow
+IF
+if(condition)
+    // statements
+else
+    // statements
+endif
+
+WHILE
+while()
+    // statements
+endwhile
+
+LOOP
+loop(count)
+    // statements
+endloop
+
+    Semantic check: if and while conditions must evaluate to boolean. loop count must evaluate to number
+    Syntax check: Mismatched block closers (such as closing an if block with endloop) throw syntax errors
+
+- Built-In functions and file operations
+1. Arithmetic (add, sub, mult, div)
+Require 1 or more number arguments. Arithmetic evaluates left-to-right (e.g., sub(10, 3, 2) equals to 5). Division by zero div(x, 0) raises a runtime error.  
+
+
+2. Comparisons and Logic (lt, gt, eq, neq, and, or, not)
+lt/gt require exactly 2 numbers. eq/neq check structural equality across identical types.
+
+3. File system procedures (rename, delete, wipe, size, duplicate)
+Upward directory traversal is prohibited to maintain execution safety. Punch checks the current directory first and then recursively is able to check child subdirectories. No matches in directory names or multiple matches can trigger runtime errors.
+
+delete() only removes files or empty folders. 
+wipe() clears folder contents while preserving the directory.
+
+4. Input and Output (out, in, in_file, out_file, out_append)
+out(...) concatenates arguments without separators and prints to stdout.
+out_file(path, ...) overwrites target file contents. out_append(path, ...) appends data to target file.
+in_file(path) returns file lines as a list_string.

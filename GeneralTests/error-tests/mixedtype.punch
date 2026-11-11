@@ -1,0 +1,6 @@
+// a string from a mixed-type list can be assogned to a number variable.
+//should get a error, output a "hello"
+-items-list = ["hello", 10]
+-n-number = -items-[0]
+out(-n-)
+out(-items-) // should output 

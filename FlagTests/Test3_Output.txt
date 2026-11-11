@@ -1,0 +1,20 @@
+./punch --tokens FlagTests/Test3.punch
+2: KEYWORD(if)
+2: LPAREN(()
+2: NUMBER(1)
+2: RPAREN())
+2: NEWLINE(\n)
+3: FUNCTION(out)
+3: LPAREN(()
+3: STRING(ok)
+3: RPAREN())
+3: NEWLINE(\n)
+4: KEYWORD(endwhile)
+4: NEWLINE(\n)
+5: EOF()
+
+./punch --ast FlagTests/Test3.punch
+[syntax error, line 4] expected 'endif' to close the 'if' on line 2 but found 'endwhile'
+
+./punch --check FlagTests/Test3.punch
+[syntax error, line 4] expected 'endif' to close the 'if' on line 2 but found 'endwhile'

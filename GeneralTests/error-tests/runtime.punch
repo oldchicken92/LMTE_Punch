@@ -1,0 +1,2 @@
+-n-number = div(10, 0) // undefined
+out(-n-)

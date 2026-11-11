@@ -1,0 +1,25 @@
+// files.punch: downward search, file commands, file I/O.
+// Run from inside examples/sandbox (see make_sandbox.sh).
+out("readme.txt is ", size(readme.txt), " bytes")
+
+// report.txt is not in the current folder, so Punch searches downwards
+out("report.txt is ", size(report.txt), " bytes")
+
+duplicate(report.txt)                  // makes report_copy.txt next to it
+rename(report_copy.txt, "copy2.txt")
+out("copy2.txt is ", size(copy2.txt), " bytes")
+delete(copy2.txt)
+
+// write, append, read back as a list
+out_file(log.txt, "started")
+out_append(log.txt, "second line")
+-lines-list_string = in_file(log.txt)
+out(-lines-)
+
+// a file variable follows rename()
+-notes-file = readme.txt
+rename(-notes-, "intro.txt")
+out(-notes-)
+
+delete(empty/)                         // empty folder: ok
+wipe(b/)                               // clears b/ but keeps the folder

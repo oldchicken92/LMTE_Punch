@@ -1,0 +1,25 @@
+-log-string = "app.log" // define variables
+
+out("start testing file operations")
+
+out_file(-log-, "[INFO] System initialized.") // initial creation / overwrite test (out_file)
+
+// append new lines (out_append)
+-user-string = "Joshua" 
+out_append(-log-, "[INFO] User ", -user-, " logged in.")
+out_append(-log-, "[WARN] Low disk space detected")
+
+out("File size: ", size(-log-), " bytes") // print size of the log file
+
+// read back all lines as a list (in_file)
+-contents-list_string = in_file(-log-) 
+out("Read ", -contents-)
+
+// duplicate
+duplicate(-log-)
+-copy-file = app_copy.log
+out("Copy created. Size of copy: ", size(-copy-), " bytes")
+
+// delete to cleanup
+delete(-copy-)
+out("testing finished, deleted copy")

@@ -3,29 +3,25 @@
 #include <fstream>
 #include <iostream>
 
-// ============================================================================
-// interpreter.cpp  -  execute a validated Punch program
-//
-// This file is the runtime core. It evaluates expressions, stores variable
-// state, executes control-flow statements, and implements the built-in language
-// functions (math, comparison, logic, filesystem commands, and I/O).
-//
-// The runtime is intentionally simple:
-//   - env maps names to the current Value held by the variable
-//   - exec*() functions perform the actual statement work
-//   - eval*() functions recursively compute expression results
-//   - built-in functions are grouped by purpose (math, compare, logic, file, I/O)
-//
-// Because the analyser already checks most invalid code, the interpreter mostly
-// focuses on executing programs that are known to be structurally and semantically
-// valid.
-// ============================================================================
+/*
+    interpreter.cpp executes a valid punch program, it is the final part of the process
+    This file executes the program statements and evaluates expressions, stores variable
+    states, executes control-flow statements and implements the built-in functions 
+    such as math, comparison, logic, filesystem commands, and I/O
 
+The runtime is intentionally simple:
+    - env maps names to the current Value held by the variable
+    - exec*() functions perform the actual statement work
+    - eval*() functions recursively compute expression results
+    - built-in functions are grouped by purpose (math, compare, logic, file, I/O)
+
+    Since the analyser already goes over invalid code, the interpreter mostly
+    focuses on executing programs that are known to be structurally and semantically
+    valid
+*/
 namespace fs = std::filesystem;
 
-// ============================================================================
 // SMALL HELPERS (private to this file)
-// ============================================================================
 namespace {
 
 // Every runtime problem goes through here so it carries the line number.
@@ -34,7 +30,7 @@ namespace {
 }
 
 // Pull a typed value out of a Value. The analyser already checked types, so
-// these only fail for things it could not know (e.g. an element of a plain list).
+// these only fail for things it could not know (eg. an element of a plain list).
 double asNumber(const Value& v, int line) {
     if (auto* d = std::get_if<double>(&v.data)) return *d;
     runtimeError(line, "expected a number but got '" + toText(v) + "'");
@@ -71,17 +67,13 @@ bool oneOf(const std::string& n, std::initializer_list<const char*> names) {
 }
 }  // namespace
 
-// ============================================================================
 // ENTRY POINT
-// ============================================================================
 void Interpreter::run(const Program& program) {
     env.clear();
     execBlock(program.statements);
 }
 
-// ============================================================================
 // STATEMENTS  (execute: do something)
-// ============================================================================
 void Interpreter::execBlock(const Block& block) {
     for (const StmtPtr& s : block) exec(*s);
 }
@@ -147,9 +139,7 @@ void Interpreter::execExprStmt(const ExprStmt& e) {
         std::cout << toText(v) << "\n";
 }
 
-// ============================================================================
 // EXPRESSIONS  (evaluate: compute a Value)
-// ============================================================================
 Value Interpreter::eval(const Expr& e) {
     if (auto* n = dynamic_cast<const NumberLit*>(&e)) return Value(n->value);
     if (auto* s = dynamic_cast<const StringLit*>(&e)) return Value(s->value);
@@ -196,9 +186,7 @@ Value Interpreter::evalCall(const Call& c) {
     runtimeError(c.line, "unknown function '" + n + "'");
 }
 
-// ============================================================================
 // BUILT-IN FUNCTIONS: maths, comparison, logic
-// ============================================================================
 
 // Arithmetic folds left to right:  sub(10, 3, 2) = (10 - 3) - 2 = 5
 Value Interpreter::callMath(const std::string& name, const std::vector<Value>& args, int line) {
@@ -235,9 +223,7 @@ Value Interpreter::callLogic(const std::string& name, const std::vector<Value>& 
     return Value(result);
 }
 
-// ============================================================================
 // FILE COMMANDS and the DOWNWARD SEARCH RULE
-// ============================================================================
 
 // resolve(name) finds the real path a name refers to:
 //   1. absolute paths and ".." are rejected, so Punch can never climb upwards
@@ -355,9 +341,7 @@ Value Interpreter::callFile(const Call& call, const std::vector<Value>& args) {
     }
 }
 
-// ============================================================================
 // INPUT / OUTPUT
-// ============================================================================
 Value Interpreter::callIO(const std::string& name, const std::vector<Value>& args, int line) {
     // out(...): join the arguments (no separator) and end with a newline.
     if (name == "out") {

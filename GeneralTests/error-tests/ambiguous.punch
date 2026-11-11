@@ -1,0 +1,2 @@
+// run from examples/sandbox: dup.txt exists in both a/ and b/
+size(dup.txt)

@@ -1,0 +1,21 @@
+// lists.punch: typed lists, indexing, change on an element
+//This test output will be
+//eric
+//[bob, erica, cindy]
+//0: bob
+//1: erica
+//2: cindy
+//[1, two, true]
+-names-list_string = ["bob", "eric", "cindy"]
+out(-names-[1])
+change(-names-[1], "erica")
+out(-names-)
+
+-i-number = 0
+while(lt(-i-, 3))
+    out(-i-, ": ", -names-[-i-])
+    change(-i-, add(-i-, 1))
+endwhile
+
+-mixed-list = [1, "two", true]
+out(-mixed-)

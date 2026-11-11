@@ -1,37 +1,23 @@
+/*
+This file is the implementation of the recursive-decent parser header
+file. Each method matches a grammar rule and if successful it procudes 
+the corresponding ast node. 
+*/
+
 #include "Parser.h"
 #include <algorithm>
 
-// parser.cpp  -  grammar-driven construction of the AST
-//
-// The parser reads the token stream produced by the lexer and builds the nested
-// tree structure described in the language grammar. Each rule is responsible for
-// matching one piece of syntax and then handing control to the next rule.
-//
-// Reading guide:
-//   - parseProgram() is the top-level entry point.
-//   - parseStatement() decides which statement form is next.
-//   - parseExpression() handles literals, variables, lists, and calls.
-//   - expect()/match() keep the parser strict and predictable.
-//
-// The whole grammar is deliberately line-oriented: one statement per line, with
-// a matching block closer such as endif/endloop/endwhile. That makes the AST
-// easier to reason about and gives later passes a clear structure to validate.
-
 Parser::Parser(std::vector<Token> t) : tokens(std::move(t)) {}
 
-// ============================================================================
-// TOKEN CURSOR
-// All reading goes through these few functions, so bounds are checked once.
-// ============================================================================
 
-// Look at a token without consuming it. Reading past the end keeps returning
-// the final EOF token, so the parser can never run off the array.
+// looks at next token to ensure when it gets to the end of file 
+// it is fine and doesnt crash
 const Token& Parser::peek(size_t offset) const {
     size_t i = std::min(current + offset, tokens.size() - 1);
     return tokens[i];
 }
 
-// Consume and return the next token (never moves past EOF).
+// Goes to the next token
 Token& Parser::advance() {
     const Token& t = peek();
     if (current < tokens.size() - 1) current++;
@@ -50,16 +36,13 @@ bool Parser::match(TokenType type) {
     return true;
 }
 
-// Consume a token of the given type or report a syntax error naming what we
-// wanted and what we actually found.
+// Consumes a token of the right type or raises a syntax error
 Token& Parser::expect(TokenType type, const std::string& what) {
     if (!check(type)) fail("expected " + what + " but found " + describe(peek()));
     return advance();
 }
 
-// SYNTAX-ERROR HELPERS  (Part D: syntactic analysis)
-
-// Human-readable description of a token for error messages.
+// For token error messages
 std::string Parser::describe(const Token& t) {
     switch (t.type) {
         case TokenType::EndOfFile: return "end of file";
@@ -75,18 +58,15 @@ void Parser::failAt(int line, const std::string& message) const {
 }
 void Parser::fail(const std::string& message) const { failAt(peek().line, message); }
 
-// Words that end a block. Statements never start with these, so parseBlock
-// stops when it sees one and lets the opener decide whether it is correct.
+// Words that end a block. Statements never start with these so parseBlock
+// stops when it sees one and lets the opener decide whether it is corect
 bool Parser::atBlockEnd() const {
     if (check(TokenType::EndOfFile)) return true;
     return checkKeyword("else") || checkKeyword("endif") ||
-           checkKeyword("endloop") || checkKeyword("endwhile");
+   checkKeyword("endloop") || checkKeyword("endwhile");
 }
 
-// After a block, require the closer that matches the opener.
-// Reports the three classic block mistakes with useful messages:
-//   - missing closer (hit end of file)
-//   - wrong closer  (e.g. an `if` closed by `endloop`)
+// Test to ensure that a closing marker is handeld properly
 void Parser::expectCloser(const std::string& closer, const std::string& opener, int openLine) {
     if (checkKeyword(closer)) { advance(); return; }
     if (check(TokenType::EndOfFile))
@@ -95,11 +75,7 @@ void Parser::expectCloser(const std::string& closer, const std::string& opener, 
          std::to_string(openLine) + " but found " + describe(peek()));
 }
 
-// ============================================================================
-// PROGRAM AND BLOCKS
-// ============================================================================
-
-// program = block ;   then nothing may be left over.
+// a block is essentially part of the program, doesn't matter where
 std::unique_ptr<Program> Parser::parseProgram() {
     auto program = std::make_unique<Program>();
     program->statements = parseBlock();
@@ -110,8 +86,8 @@ std::unique_ptr<Program> Parser::parseProgram() {
     return program;
 }
 
-// block = { statement NEWLINE } ;
-// Each statement must sit alone on its line (one statement per line rule).
+// block = { statement NEWLINE }
+// Each statement must sit alone on its line
 Block Parser::parseBlock() {
     Block statements;
     while (!atBlockEnd()) {
@@ -121,10 +97,8 @@ Block Parser::parseBlock() {
     return statements;
 }
 
-// ============================================================================
-// STATEMENTS
+// for statements
 // The first token tells us which kind of statement this is (one-token lookahead).
-// ============================================================================
 StmtPtr Parser::parseStatement() {
     switch (peek().type) {
         case TokenType::Variable: return parseDeclaration();
@@ -140,15 +114,13 @@ StmtPtr Parser::parseStatement() {
     fail("a statement cannot start with " + describe(peek()));
 }
 
-// declaration = VARIABLE TYPE "=" expression ;      e.g.  -num-number = 10
+// declaration = VARIABLE TYPE "=" expression;
 StmtPtr Parser::parseDeclaration() {
     auto node = std::make_unique<Declaration>();
     const Token& var = advance();
     node->line = var.line;
     node->name = var.text;
 
-    // A variable at the start of a line must be a declaration, so a TYPE
-    // must follow. `-x- = 5` is the common mistake; point at change().
     if (!check(TokenType::Type))
         fail("'-" + var.text + "-' needs a type to be declared, e.g. -" + var.text +
              "-number = 5 (use change(-" + var.text + "-, value) to update it)");
@@ -160,12 +132,11 @@ StmtPtr Parser::parseDeclaration() {
     return node;
 }
 
+// parser section for the change statement
 // change_stmt = "change" "(" target "," expression ")" ;
-// A special form: the first argument is a variable REFERENCE (something to
-// overwrite), not a value, so it has its own rule instead of using parseCall.
 StmtPtr Parser::parseChange() {
     auto node = std::make_unique<Change>();
-    node->line = advance().line;                       // 'change'
+    node->line = advance().line; // change
     expect(TokenType::LParen, "'(' after 'change'");
     if (!check(TokenType::Variable))
         fail("change() needs a variable first, found " + describe(peek()));
@@ -176,10 +147,11 @@ StmtPtr Parser::parseChange() {
     return node;
 }
 
+// Parser statment for if
 // if_stmt = "if" "(" expression ")" NEWLINE block [ "else" NEWLINE block ] "endif" ;
 StmtPtr Parser::parseIf() {
     auto node = std::make_unique<If>();
-    node->line = advance().line;                       // 'if'
+    node->line = advance().line;   
     expect(TokenType::LParen, "'(' after 'if'");
     node->condition = parseExpression();
     expect(TokenType::RParen, "')' to close the condition");
@@ -194,10 +166,11 @@ StmtPtr Parser::parseIf() {
     return node;
 }
 
+// parser statements for loop
 // loop_stmt = "loop" "(" expression ")" NEWLINE block "endloop" ;
 StmtPtr Parser::parseLoop() {
     auto node = std::make_unique<Loop>();
-    node->line = advance().line;                       // 'loop'
+    node->line = advance().line;       
     expect(TokenType::LParen, "'(' after 'loop'");
     node->count = parseExpression();
     expect(TokenType::RParen, "')' to close the loop count");
@@ -207,6 +180,7 @@ StmtPtr Parser::parseLoop() {
     return node;
 }
 
+// parser statements for while
 // while_stmt = "while" "(" expression ")" NEWLINE block "endwhile" ;
 StmtPtr Parser::parseWhile() {
     auto node = std::make_unique<While>();
@@ -220,7 +194,7 @@ StmtPtr Parser::parseWhile() {
     return node;
 }
 
-// A call on its own line: add(1, 2)  -> the result is printed at runtime.
+// A call on its own line
 StmtPtr Parser::parseExprStatement() {
     auto node = std::make_unique<ExprStmt>();
     node->line = peek().line;
@@ -228,12 +202,9 @@ StmtPtr Parser::parseExprStatement() {
     return node;
 }
 
-// ============================================================================
 // EXPRESSIONS
-// ============================================================================
-
 // expression = call | VARIABLE [ "[" expression "]" ] | NUMBER | STRING
-//            | BOOLEAN | FILE | FOLDER | list ;
+// | BOOLEAN | FILE | FOLDER | list ;
 ExprPtr Parser::parseExpression() {
     const Token& t = peek();
     switch (t.type) {
@@ -280,6 +251,7 @@ ExprPtr Parser::parseExpression() {
     fail("expected a value but found " + describe(t));
 }
 
+
 // VARIABLE [ "[" expression "]" ]     -x-   or   -x-[0]
 ExprPtr Parser::parseVarRef() {
     auto node = std::make_unique<VarRef>();
@@ -293,6 +265,7 @@ ExprPtr Parser::parseVarRef() {
     return node;
 }
 
+// parser for list
 // list = "[" [ expression { "," expression } ] "]" ;
 ExprPtr Parser::parseList() {
     auto node = std::make_unique<ListLit>();
@@ -306,10 +279,8 @@ ExprPtr Parser::parseList() {
     return node;
 }
 
+// parser for call 
 // call = FUNCTION "(" [ expression { "," expression } ] ")" ;
-// The "[ ... ]" makes the whole argument list optional; the "{ ... }" repeats
-// "comma + expression" zero or more times. Hence add(), add(1), add(1,2,3).
-// Because arguments are expressions, calls nest: add(1, mult(2, 3)).
 ExprPtr Parser::parseCall() {
     auto node = std::make_unique<Call>();
     const Token& fn = expect(TokenType::Function, "a function name");
