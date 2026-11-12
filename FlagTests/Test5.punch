@@ -1,0 +1,4 @@
+// Testing Non-Number Loop Count
+loop(true)
+    out("ok")
+endloop

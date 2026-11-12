@@ -1,0 +1,21 @@
+./punch --tokens FlagTests/Test4.punch
+2: KEYWORD(while)
+2: LPAREN(()
+2: NUMBER(1)
+2: RPAREN())
+2: NEWLINE(\n)
+3: FUNCTION(out)
+3: LPAREN(()
+3: STRING(ok)
+3: RPAREN())
+3: NEWLINE(\n)
+4: KEYWORD(endwhile)
+4: NEWLINE(\n)
+4: EOF()
+
+./punch --ast FlagTests/Test4.punch
+While 1
+  Expression out("ok")  
+
+./punch --check FlagTests/Test4.punch
+[semantic error, line 2] while condition must be true/false (e.g. lt(), eq(), and()) but is number

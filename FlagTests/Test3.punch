@@ -1,4 +1,4 @@
 //Testing Non-boolean If Condition
 if(1)
    out("ok")
-endwhile
+endif

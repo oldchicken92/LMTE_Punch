@@ -1,0 +1,4 @@
+// Testing Non-Boolean While Condition
+while(1)
+    out("ok")
+endwhile

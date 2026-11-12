@@ -1,0 +1,21 @@
+ ./punch --tokens FlagTests/Test5.punch
+2: KEYWORD(loop)
+2: LPAREN(()
+2: BOOLEAN(true)
+2: RPAREN())
+2: NEWLINE(\n)
+3: FUNCTION(out)
+3: LPAREN(()
+3: STRING(ok)
+3: RPAREN())
+3: NEWLINE(\n)
+4: KEYWORD(endloop)
+4: NEWLINE(\n)
+5: EOF()
+
+./punch --ast FlagTests/Test5.punch
+Loop true times
+  Expression out("ok")
+
+./punch --check FlagTests/Test5.punch
+[semantic error, line 2] loop count must be a number but is boolean
