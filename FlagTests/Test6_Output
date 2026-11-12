@@ -1,0 +1,8 @@
+./punch --token FlagTests/Test6.punch
+[lexical error, line 5] unclosed variable name '-count'
+
+./punch --ast FlagTests/Test6.punch
+[lexical error, line 5] unclosed variable name '-count'
+
+./punch --check FlagTests/Test6.punch
+[lexical error, line 5] unclosed variable name '-count'

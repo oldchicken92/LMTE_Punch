@@ -1,0 +1,8 @@
+./punch --token FlagTests/Test8.punch
+[semantic error, line 2] cannot store string ('-x-' is declared number)
+
+./punch --ast FlagTests/Test8.punch
+Declaration -x- : number = "hello"
+
+maxim@PChicken:~/LMTE/LMTE_Punch$ ./punch --check FlagTests/Test8.punch
+[semantic error, line 2] cannot store string ('-x-' is declared number)

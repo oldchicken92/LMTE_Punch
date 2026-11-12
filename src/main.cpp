@@ -6,7 +6,7 @@ Goes as follows:
 ./punch script.punch            run the script
 ./punch --tokens script.punch   stop after the lexer, print the tokens
 ./punch --ast script.punch      stop after the parser, print the tree
-./punch --check script.punch    stop after the analyser (no side effects)
+./punch --check script.punch    stop after the analyser
 */
 
 #include <fstream>

@@ -16,7 +16,9 @@ A command language implemented as a tree-walking interpreter in C++17.
 ## Compilation Process
 g++ -std=c++17 -Wall src/*.cpp -o punch
 
-This line creates the final compiled binary program from all our C++ source files. It creates an executable 'punch' to which we pass script files into. This executable involves running our passed file, *.punch, through our 'pipeline' consisting of the _lexer, parser, analyser and interpreter_. Which then outputs whatever instruction was written in the .punch file (whether it may be a command line 'out' or an 'out_file' file created in the directory)
+This line creates the final compiled binary program from all our C++ source files. It creates an executable 'punch' to which we pass script files into. 
+This executable involves running our passed file, *.punch, through our 'pipeline' consisting of the _lexer, parser, analyser and interpreter_. 
+Which then outputs whatever instruction was written in the .punch file (whether it may be a command line 'out' or an 'out_file' file created in the directory)
 
 - First the script text is loaded into memory. 
 - The lexer converts the text into tokens
@@ -31,6 +33,23 @@ Compiler supports:
 - Syntax Analysis
 - Code Generation
 - Semantic Analysis
+
+## Testing files
+There are two main folders of test cases and examples called: FlagTests & GeneralTests
+
+FlagTests: 
+The FlagTests folder contains multiple punch files, that is either valid or has some lexical, semantic or syntax error. 
+Each punch file has a corresponding output file that contains the output of the punch file with flags --token, --ast and --check. 
+
+GeneralTests: 
+The GeneralTests folder contains 3 folders. An error-tests folder that has punch files that throw errors, a file-tests folder that has 
+various punch files that contain file/folder commands and a regulartests folder that contains punch files testing various functions 
+and variables. 
+
+To execute any of these test files: 
+- Stay in parent folder (where the makefile is)
+- Compile (if not already)
+- Type command: ./punch folderpath/[file].punch
 
 ## Design Outline - Syntactic and Semantic rules of the Compiler
 - General language and scope rules

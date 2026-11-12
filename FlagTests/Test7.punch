@@ -1,0 +1,5 @@
+// Syntax error test
+// Closing bracket ')' missing on add function
+
+-x-number = add(1, 2
+out(-x-)

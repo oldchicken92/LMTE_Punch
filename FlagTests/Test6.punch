@@ -1,0 +1,5 @@
+// Test for invalid out function, throws errors
+
+-count-number=100
+change(-count-, sub(-count-,5))
+out("Count is now:" , -count
