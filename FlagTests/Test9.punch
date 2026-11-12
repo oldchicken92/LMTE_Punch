@@ -1,0 +1,19 @@
+//bubble sort a list
+-scores-list_number = [42, 7, 19, 88, 3, 56]
+out("before: ", -scores-)
+
+-passes-number = 0
+while(lt(-passes-, 5))
+-i-number = 0
+while(lt(-i-, 5))
+-a-number = -scores-[-i-]
+-b-number = -scores-[add(-i-, 1)]
+if(gt(-a-, -b-))
+change(-scores-[-i-], -b-)
+change(-scores-[add(-i-, 1)], -a-)
+endif
+change(-i-, add(-i-, 1))
+endwhile
+change(-passes-, add(-passes-, 1))
+endwhile
+out("after:  ", -scores-)

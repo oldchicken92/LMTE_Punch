@@ -1,5 +1,19 @@
-./punch --token FlagTests/Test7.punch
-[syntax error, line 4] expected ')' to close add( but found end of line
+./punch --tokens FlagTests/Test7.punch
+4: VARIABLE(x)
+4: TYPE(number)
+4: EQUALS(=)
+4: FUNCTION(add)
+4: LPAREN(()
+4: NUMBER(1)
+4: COMMA(,)
+4: NUMBER(2)
+4: NEWLINE(\n)
+5: FUNCTION(out)
+5: LPAREN(()
+5: VARIABLE(x)
+5: RPAREN())
+5: NEWLINE(\n)
+5: EOF()
 
 ./punch --ast FlagTests/Test7.punch
 [syntax error, line 4] expected ')' to close add( but found end of line
