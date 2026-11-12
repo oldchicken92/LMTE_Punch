@@ -1,4 +1,6 @@
-// Testing Non-Boolean While Condition
-while(1)
-    out("ok")
-endwhile
+// Testing Arithmetic Functions
+add(1,2,3)
+sub(10,3,2)
+mult(2,3,4)
+div(20,2,2)
+add(1,mult(2,3))

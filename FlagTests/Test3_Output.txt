@@ -1,4 +1,4 @@
-./punch --tokens FlagTests/Test3.punch
+./punch --tokens FlagTests/Test3.punch 
 2: KEYWORD(if)
 2: LPAREN(()
 2: NUMBER(1)
@@ -9,12 +9,41 @@
 3: STRING(ok)
 3: RPAREN())
 3: NEWLINE(\n)
-4: KEYWORD(endwhile)
+4: KEYWORD(endif)
 4: NEWLINE(\n)
-5: EOF()
+7: KEYWORD(while)
+7: LPAREN(()
+7: NUMBER(1)
+7: RPAREN())
+7: NEWLINE(\n)
+8: FUNCTION(out)
+8: LPAREN(()
+8: STRING(ok)
+8: RPAREN())
+8: NEWLINE(\n)
+9: KEYWORD(endwhile)
+9: NEWLINE(\n)
+12: KEYWORD(loop)
+12: LPAREN(()
+12: BOOLEAN(true)
+12: RPAREN())
+12: NEWLINE(\n)
+13: FUNCTION(out)
+13: LPAREN(()
+13: STRING(ok)
+13: RPAREN())
+13: NEWLINE(\n)
+14: KEYWORD(endloop)
+14: NEWLINE(\n)
+15: EOF()
 
 ./punch --ast FlagTests/Test3.punch
-[syntax error, line 4] expected 'endif' to close the 'if' on line 2 but found 'endwhile'
+If 1
+  Expression out("ok")
+While 1
+  Expression out("ok")
+Loop true times
+  Expression out("ok")
 
 ./punch --check FlagTests/Test3.punch
-[syntax error, line 4] expected 'endif' to close the 'if' on line 2 but found 'endwhile'
+[semantic error, line 2] if condition must be true/false (e.g. lt(), eq(), and()) but is number

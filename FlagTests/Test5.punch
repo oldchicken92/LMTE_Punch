@@ -1,4 +1,13 @@
-// Testing Non-Number Loop Count
-loop(true)
-    out("ok")
-endloop
+// Testing Comparison Functions
+lt(3,4)
+gt(5,6)
+eq(6,6)
+neq(6,7)
+
+// Testing Logical Functions
+and(true,false)
+or(false,true)
+not(true)
+
+// Testing Nested Comparison and Logic
+and(gt(7,6),lt(7,9))

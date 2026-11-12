@@ -2,3 +2,13 @@
 if(1)
    out("ok")
 endif
+
+// Testing Non-Boolean While Condition
+while(1)
+    out("ok")
+endwhile
+
+// Testing Non-Number Loop Count
+loop(true)
+    out("ok")
+endloop
